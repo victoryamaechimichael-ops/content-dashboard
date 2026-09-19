@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Board of Advisors — vic_k.ie_</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#141110; --panel:#1c1815; --panel2:#201b18; --line:#3a332c;
+    --text:#f3ede2; --dim:#b7ac9c;
+    --gold:#cba25f; --green:#8fae74; --red:#c2695a;
+    --blue:#7d97b0; --purple:#a58fc4; --teal:#6fa8a0;
+    --serif:'Fraunces',Georgia,serif; --sans:'Inter',-apple-system,sans-serif;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:var(--sans);line-height:1.5;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:780px;margin:0 auto;padding:0 18px 90px;}
+  a{color:var(--gold);}
+
+  /* header */
+  header.hero{padding:36px 18px 22px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--bg);z-index:20;}
+  .eyebrow{font-size:12.5px;color:var(--dim);}
+  h1{font-family:var(--serif);font-weight:600;font-size:32px;line-height:1.1;margin:8px 0 10px;letter-spacing:-0.01em;}
+  .hero-sub{font-size:15px;color:var(--dim);margin:0 0 16px;max-width:56ch;}
+  .toggle-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+  .toggle-btn{
+    font-family:var(--sans);font-weight:600;font-size:13px;
+    background:var(--panel);border:1px solid var(--line);color:var(--dim);
+    padding:8px 14px;cursor:pointer;border-radius:3px;
+  }
+  .toggle-btn.active{background:var(--gold);color:#1c1815;border-color:var(--gold);}
+
+  /* advisor legend */
+  .legend-row{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px;}
+  .legend-pill{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--dim);border:1px solid var(--line);padding:4px 9px;border-radius:20px;}
+  .dot{width:8px;height:8px;border-radius:50%;display:inline-block;}
+
+  section{padding:36px 0;border-bottom:1px solid var(--line);}
+  section:last-of-type{border-bottom:none;}
+  .advisor-tag{
+    display:inline-flex;align-items:center;gap:7px;font-size:12.5px;font-weight:600;
+    padding:4px 10px 4px 4px;border:1px solid var(--line);border-radius:20px;margin-bottom:12px;color:var(--text);
+  }
+  .advisor-tag .dot{width:10px;height:10px;}
+  h2{font-family:var(--serif);font-weight:600;font-size:24px;margin:0 0 8px;}
+  h3{font-family:var(--serif);font-weight:600;font-size:17px;margin:26px 0 10px;}
+  p.lead{color:var(--dim);font-size:14.5px;max-width:58ch;margin:0 0 20px;}
+
+  /* stat grid */
+  .stat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1px;background:var(--line);border:1px solid var(--line);margin:12px 0 4px;}
+  .stat{background:var(--panel);padding:16px 14px;}
+  .stat .num{font-family:var(--serif);font-size:24px;color:var(--gold);line-height:1;}
+  .stat .lbl{font-size:12px;color:var(--dim);margin-top:6px;}
+
+  /* chart card */
+  .chart-card{background:var(--panel);border:1px solid var(--line);padding:18px 16px 16px;margin:14px 0 22px;}
+  .chart-title{font-size:13.5px;font-weight:600;margin-bottom:2px;}
+  .chart-note{font-size:12.5px;color:var(--dim);margin-bottom:14px;}
+  .explain-panel{
+    margin-top:14px;padding:12px 13px;background:var(--panel2);border:1px dashed var(--line);
+    font-size:14px;color:var(--text);min-height:20px;border-radius:2px;
+  }
+  .explain-panel .hint{color:var(--dim);font-size:13px;margin:0;}
+  .explain-panel .who{display:block;font-size:11.5px;color:var(--gold);margin-bottom:4px;font-weight:600;}
+
+  /* bar chart (css bars) */
+  .barchart{display:flex;flex-direction:column;gap:10px;}
+  .bar-item{cursor:pointer;padding:4px 2px;border-radius:3px;}
+  .bar-item:hover{background:rgba(255,255,255,0.03);}
+  .bar-item.selected{background:rgba(203,162,95,0.1);}
+  .bar-label-row{display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px;gap:10px;}
+  .bar-label-row .val{color:var(--gold);font-variant-numeric:tabular-nums;white-space:nowrap;}
+  .bar-track{background:var(--bg);height:22px;border:1px solid var(--line);position:relative;}
+  .bar-fill{height:100%;transition:width .3s;}
+
+  /* pie chart */
+  .pie-wrap{display:flex;gap:20px;align-items:center;flex-wrap:wrap;}
+  svg.pie{flex-shrink:0;}
+  .pie path{cursor:pointer;stroke:var(--bg);stroke-width:1.5;transition:opacity .15s;}
+  .pie path:hover{opacity:0.85;}
+  .pie path.selected{stroke:var(--text);stroke-width:2;}
+  .pie-key{display:flex;flex-direction:column;gap:6px;font-size:13px;}
+  .pie-key-item{display:flex;align-items:center;gap:7px;cursor:pointer;}
+  .pie-key-item .sw{width:11px;height:11px;border-radius:2px;flex-shrink:0;}
+
+  /* line chart */
+  svg.linechart{width:100%;height:auto;}
+  .line-pt{cursor:pointer;}
+  .line-pt:hover{r:8;}
+
+  /* bubble chart */
+  svg.bubblechart{width:100%;height:auto;}
+  .bubble{cursor:pointer;opacity:0.75;transition:opacity .15s;}
+  .bubble:hover{opacity:1;}
+  .bubble.selected{stroke:var(--text);stroke-width:2;opacity:1;}
+
+  table{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px;}
+  th{text-align:left;font-weight:600;color:var(--dim);font-size:11.5px;padding:7px 7px;border-bottom:1px solid var(--line);}
+  td{padding:8px 7px;border-bottom:1px solid var(--line);vertical-align:top;}
+  td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap;}
+  tr:last-child td{border-bottom:none;}
+
+  ul{margin:0 0 14px;padding-left:20px;}
+  li{margin-bottom:8px;font-size:14.5px;}
+  li::marker{color:var(--gold);}
+
+  .angle-card{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--green);padding:14px 15px;margin-bottom:12px;}
+  .angle-card .angle-title{font-weight:600;font-size:15px;margin-bottom:5px;}
+  .angle-card .angle-body{font-size:13.5px;color:var(--dim);margin-bottom:6px;}
+  .angle-card .angle-evidence{font-size:12px;color:var(--gold);}
+
+  .datanote{margin-top:18px;padding:13px 15px;background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--gold);font-size:13.5px;color:var(--dim);}
+  .datanote strong{color:var(--text);}
+
+  body.simple-mode .detail-only{display:none !important;}
+  footer{padding:28px 0 0;color:var(--dim);font-size:12.5px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="hero">
+  <div class="eyebrow">BOARD OF ADVISORS — @vic_k.ie_</div>
+  <h1 class="adaptive-text" data-detailed="Your full board, in real numbers" data-simple="Your board's report">Your full board, in real numbers</h1>
+  <p class="hero-sub adaptive-text" data-detailed="Four advisors looked at your Metricool data: your tracked competitors, your own top and bottom posts, and what it all means for what you post next. Tap any bar, slice, or dot on a chart to get a plain-English explanation." data-simple="A short look at how your account compares, and what to post next.">Four advisors looked at your Metricool data: your tracked competitors, your own top and bottom posts, and what it all means for what you post next. Tap any bar, slice, or dot on a chart to get a plain-English explanation.</p>
+  <div class="toggle-row">
+    <button class="toggle-btn active" id="btn-detailed" onclick="setMode('detailed')">Detailed (for you)</button>
+    <button class="toggle-btn" id="btn-simple" onclick="setMode('simple')">Simple (for clients)</button>
+  </div>
+  <div class="legend-row detail-only">
+    <span class="legend-pill"><span class="dot" style="background:var(--blue)"></span>Vickie — Scout</span>
+    <span class="legend-pill"><span class="dot" style="background:var(--gold)"></span>Vickiern — Historian</span>
+    <span class="legend-pill"><span class="dot" style="background:var(--purple)"></span>VictoryMichael — Strategist</span>
+    <span class="legend-pill"><span class="dot" style="background:var(--green)"></span>Vicky — Idea Generator</span>
+  </div>
+  <div class="datanote detail-only">
+    <strong>A note before you read this.</strong> Nothing here is invented. Every number is pulled straight from Metricool: your 3 tracked competitors (jun_yuh, salemkinging, victor_okafor), and your own posts from 19 July to 19 September 2026 (42 reels, 10 feed posts). Where I read your captions to spot a pattern, I'm telling you exactly which real post I'm pointing at.
+  </div>
+</header>
+
+<!-- SNAPSHOT -->
+<section>
+  <span class="advisor-tag detail-only"><span class="dot" style="background:var(--dim)"></span>The board, together</span>
+  <h2 class="adaptive-text" data-detailed="Where everyone stands, right now" data-simple="The quick picture">Where everyone stands, right now</h2>
+  <p class="lead adaptive-text" data-detailed="Same 62-day window (19 July to 19 September) for you and all 3 tracked competitors." data-simple="Same time period for everyone, so it's a fair comparison.">Same 62-day window (19 July to 19 September) for you and all 3 tracked competitors.</p>
+  <div class="stat-grid">
+    <div class="stat"><div class="num">107</div><div class="lbl">Your followers</div></div>
+    <div class="stat"><div class="num">52</div><div class="lbl">Your posts (42 reels, 10 carousels)</div></div>
+    <div class="stat"><div class="num">3</div><div class="lbl">Tracked competitors in Metricool</div></div>
+    <div class="stat"><div class="num">5.9M</div><div class="lbl">Combined competitor followers</div></div>
+  </div>
+
+  <div class="chart-card">
+    <div class="chart-title">Followers, side by side</div>
+    <div class="chart-note">Bar length uses a shrunk scale so all 4 fit on screen — the number on the right is the real count. Tap a bar.</div>
+    <div class="barchart" id="chart-followers"></div>
+    <div class="explain-panel" id="explain-followers"><p class="hint">Tap any bar to see what it means.</p></div>
+  </div>
+</section>
+
+<!-- VICKIE - SCOUT -->
+<section>
+  <span class="advisor-tag"><span class="dot" style="background:var(--blue)"></span>Vickie — the Scout</span>
+  <h2 class="adaptive-text" data-detailed="What your competitors are actually doing" data-simple="What others in your space are doing">What your competitors are actually doing</h2>
+  <p class="lead adaptive-text" data-detailed="Scout's job: watch the 3 accounts you're tracking and report exactly what's happening, no spin." data-simple="A look at 3 similar creators you're tracking.">Scout's job: watch the 3 accounts you're tracking and report exactly what's happening, no spin.</p>
+
+  <div class="chart-card">
+    <div class="chart-title">How many reels each account posted</div>
+    <div class="chart-note">Same 62 days. Tap a bar.</div>
+    <div class="barchart" id="chart-reelcount"></div>
+    <div class="explain-panel" id="explain-reelcount"><p class="hint">Tap any bar to see what it means.</p></div>
+  </div>
+
+  <div class="chart-card">
+    <div class="chart-title">Metricool's engagement score (competitors only)</div>
+    <div class="chart-note">This is Metricool's own scoring formula, so it's a fair 3-way comparison between them. It is not calculated the same way as your own engagement numbers below, so don't compare it directly to your own bars elsewhere on this page.</div>
+    <div class="barchart" id="chart-compeng"></div>
+    <div class="explain-panel" id="explain-compeng"><p class="hint">Tap any bar to see what it means.</p></div>
+  </div>
+
+  <h3 class="detail-only">Their real best posts (actual captions, actual numbers)</h3>
+  <table class="detail-only">
+    <tr><th>Account</th><th>What the post was about</th><th class="num">Likes</th><th class="num">Comments</th></tr>
+    <tr><td>jun_yuh</td><td>A long, personal story about growing up poor, her parents' divorce, and how she learned to love</td><td class="num">297,749</td><td class="num">1,199</td></tr>
+    <tr><td>jun_yuh</td><td>A personal story about why she loves her girlfriend, tied to a course pitch</td><td class="num">69,425</td><td class="num">739</td></tr>
+    <tr><td>salemkinging</td><td>A "we hit 350,000 followers" milestone post</td><td class="num">25,048</td><td class="num">1,316</td></tr>
+    <tr><td>salemkinging</td><td>A short, vague "new personality" post with almost no caption</td><td class="num">13,345</td><td class="num">107</td></tr>
+    <tr><td>victor_okafor</td><td>Mostly community pitches for his paid "Jali Tribe" group, engagement stayed low across nearly all of them</td><td class="num">under 2,000</td><td class="num">usually under 50</td></tr>
+  </table>
+  <p class="lead detail-only" style="margin-top:10px;">Scout's honest read: jun_yuh's single biggest post by far is a deeply personal story, not a sales post. salemkinging's top 2 posts are a real milestone and almost nothing (proof that a big number alone can carry a post). victor_okafor leans almost entirely on group-sales posts, and his numbers are the flattest of the 3.</p>
+</section>
+
+<!-- VICKIERN - HISTORIAN -->
+<section>
+  <span class="advisor-tag"><span class="dot" style="background:var(--gold)"></span>Vickiern — the Historian</span>
+  <h2 class="adaptive-text" data-detailed="What your own history actually shows" data-simple="What's worked for you so far">What your own history actually shows</h2>
+  <p class="lead adaptive-text" data-detailed="Historian's job: go through everything you've posted and find the real pattern, not a guess." data-simple="Looking back at your posts to find what worked.">Historian's job: go through everything you've posted and find the real pattern, not a guess.</p>
+
+  <div class="chart-card">
+    <div class="chart-title">Reels vs carousels, by how many you post</div>
+    <div class="pie-wrap">
+      <svg class="pie" id="pie-format" width="160" height="160" viewBox="0 0 160 160"></svg>
+      <div class="pie-key" id="pie-format-key"></div>
+    </div>
+    <div class="explain-panel" id="explain-format"><p class="hint">Tap a slice or a key label.</p></div>
+  </div>
+
+  <div class="chart-card">
+    <div class="chart-title">Average views, by what the post was actually about</div>
+    <div class="chart-note">I read your real captions and sorted all 42 reels into 5 types. This is the real average for each type.</div>
+    <div class="barchart" id="chart-contenttype"></div>
+    <div class="explain-panel" id="explain-contenttype"><p class="hint">Tap any bar to see what it means.</p></div>
+  </div>
+
+  <div class="chart-card detail-only">
+    <div class="chart-title">Your posting trend, month by month</div>
+    <div class="chart-note">Average views per reel, by month.</div>
+    <svg class="linechart" id="line-monthly" viewBox="0 0 400 180"></svg>
+    <div class="explain-panel" id="explain-monthly"><p class="hint">Tap a dot on the line.</p></div>
+  </div>
+
+  <div class="chart-card detail-only">
+    <div class="chart-title">Every reel, plotted</div>
+    <div class="chart-note">Each dot is one reel. Left to right is reach (how many people saw it), up and down is interactions (likes + comments + saves), and the size of the dot is total views. Color shows the type of post. Tap any dot.</div>
+    <svg class="bubblechart" id="bubble-reels" viewBox="0 0 400 260"></svg>
+    <div class="pie-key" id="bubble-key" style="margin-top:10px;"></div>
+    <div class="explain-panel" id="explain-bubble"><p class="hint">Tap any dot to see which reel it is and what happened.</p></div>
+  </div>
+</section>
+
+<!-- VICTORYMICHAEL - STRATEGIST -->
+<section>
+  <span class="advisor-tag"><span class="dot" style="background:var(--purple)"></span>VictoryMichael — the Strategist</span>
+  <h2 class="adaptive-text" data-detailed="Pressure-testing the pattern" data-simple="Does the pattern actually hold up?">Pressure-testing the pattern</h2>
+  <p class="lead adaptive-text" data-detailed="Strategist's job: take what Scout and Historian found and try to poke holes in it before you build a strategy around it." data-simple="Checking the pattern is real, not a fluke.">Strategist's job: take what Scout and Historian found and try to poke holes in it before you build a strategy around it.</p>
+
+  <ul>
+    <li><strong>The personal-story pattern holds up outside your account too.</strong> jun_yuh's biggest post (297,749 likes) and one of salemkinging's top 2 (25,048 likes) are both personal, specific stories, not sales posts or generic updates. Your own best reel (Marilyn Madlion, 571 views) follows the same shape. This is not a one-account fluke.</li>
+    <li><strong>But it's a reach effect, not an engagement effect.</strong> When I split your own reels by type, personal stories average 110.7 views against 49.7 for generic "Day X/100" reels, more than double. Once someone actually sees the post, though, personal (16.9) and generic (16.8) engage almost identically. Personal stories get shown to more people. They don't make people click or comment harder once seen.</li>
+    <li><strong>Sales pitches are the one type that's clearly weaker, on both counts.</strong> Your 6 direct product-pitch reels averaged 57.7 views and only 7.9 engagement, the lowest of any type. That matches victor_okafor, whose account is almost entirely pitch content and has the flattest numbers of your 3 competitors.</li>
+    <li><strong>Your format mix doesn't match your own data.</strong> Carousels engage at 32.8 versus 14.8 for reels, more than double, but you post reels 4 times as often as carousels (42 vs 10).</li>
+    <li><strong>Posting volume gap is real, but it's not the same fight.</strong> jun_yuh posted 152 reels and salemkinging 90 in the same 62 days you posted 42. They also have 5.3M and 357K followers already built up. More posting alone will not close that gap. What their top posts share with yours (real story, real name, real number) is the more useful thing to copy, not the volume.</li>
+  </ul>
+</section>
+
+<!-- VICKY - IDEA GENERATOR -->
+<section>
+  <span class="advisor-tag"><span class="dot" style="background:var(--green)"></span>Vicky — the Idea Generator</span>
+  <h2 class="adaptive-text" data-detailed="Content angles, built from what actually worked" data-simple="What to try next">Content angles, built from what actually worked</h2>
+  <p class="lead adaptive-text" data-detailed="These are angles, not scripts. Each one points to the exact real post, yours or a competitor's, that proves it works. No made-up captions." data-simple="Ideas based on real posts that already worked.">These are angles, not scripts. Each one points to the exact real post, yours or a competitor's, that proves it works. No made-up captions.</p>
+
+  <div class="angle-card">
+    <div class="angle-title">Name a real person and a real result</div>
+    <div class="angle-body">Your single best post named Marilyn Madlion and a specific number (a free call worth over ₦100k). Do this again with a different name, mentor, or collaborator, and a specific real outcome.</div>
+    <div class="angle-evidence">Evidence: your Sept 1 reel, 571 views, your highest by far. Also jun_yuh's top post (297,749 likes) names a real relationship and a real family story.</div>
+  </div>
+
+  <div class="angle-card">
+    <div class="angle-title">Turn your milestones into their own post</div>
+    <div class="angle-body">A plain "we hit a number" post, with almost no extra content, still performed. You have real milestones coming (VX Space, 100 days, follower counts). Post the number itself as the whole post.</div>
+    <div class="angle-evidence">Evidence: salemkinging's 350,000 followers post, 25,048 likes on a post with barely any caption.</div>
+  </div>
+
+  <div class="angle-card">
+    <div class="angle-title">Shift more of your output to carousels</div>
+    <div class="angle-body">You already write long, thoughtful captions (your mental health post, your "4 things you need in 2026" post). Turn more of those into carousels instead of reels. It's the same writing you're already doing, in the format that engages twice as hard for you.</div>
+    <div class="angle-evidence">Evidence: your carousel engagement average (32.8) vs your reel average (14.8), from your own 52 posts.</div>
+  </div>
+
+  <div class="angle-card">
+    <div class="angle-title">Move the sales pitch to the middle or end, not the opener</div>
+    <div class="angle-body">Your two best-performing product mentions (Jul 31, Jul 28) opened with a relatable struggle and introduced the product second. Your three weakest (Aug 15, Aug 11, Aug 3) opened with the price or the pitch itself.</div>
+    <div class="angle-evidence">Evidence: your own 6 pitch reels, engagement ranged from 1.8 to 17.9 depending only on where the pitch sat in the caption.</div>
+  </div>
+
+  <div class="angle-card">
+    <div class="angle-title">Keep the "Day X/100" label, but move it out of the opening line</div>
+    <div class="angle-body">Your "Day X/100" captions are your most common format and your weakest, averaging 49.7 views against 110.7 for a real story. You don't need to drop the challenge format, just don't let it be the first thing a stranger reads.</div>
+    <div class="angle-evidence">Evidence: 21 of your 42 reels used this pattern and it's your lowest-performing group by average views.</div>
+  </div>
+</section>
+
+<footer class="detail-only">
+  Built from real Metricool data for @vic_k.ie_ and 3 tracked competitors (jun_yuh, salemkinging, victor_okafor), 19 July to 19 September 2026. Content type labels (personal, generic, sales, educational, creative) were assigned by reading your real captions, not by Instagram itself.
+</footer>
+
+</div>
+
+<script>
+let mode = 'detailed';
+
+function setMode(m){
+  mode = m;
+  document.body.classList.toggle('simple-mode', m==='simple');
+  document.getElementById('btn-detailed').classList.toggle('active', m==='detailed');
+  document.getElementById('btn-simple').classList.toggle('active', m==='simple');
+  document.querySelectorAll('.adaptive-text').forEach(el=>{
+    const v = m==='simple' ? el.dataset.simple : el.dataset.detailed;
+    if(v) el.textContent = v;
+  });
+  document.querySelectorAll('.explain-panel').forEach(p=>{
+    p.innerHTML = '<p class="hint">Tap any chart element to see what it means.</p>';
+  });
+  document.querySelectorAll('.bar-item.selected,.pie path.selected,.bubble.selected,.line-pt.selected').forEach(el=>el.classList.remove('selected'));
+}
+
+function setExplain(panelId, group, btn, textDetailed, textSimple, who){
+  const panel = document.getElementById(panelId);
+  const txt = mode==='simple' ? textSimple : textDetailed;
+  panel.innerHTML = (who? '<span class="who">'+who+'</span>':'') + '<p style="margin:0">'+txt+'</p>';
+  document.querySelectorAll('.'+group+' .selected').forEach(el=>el.classList.remove('selected'));
+  btn.classList.add('selected');
+}
+
+/* ---------- BAR CHART BUILDER ---------- */
+function buildBars(containerId, panelId, items, groupClass){
+  const el = document.getElementById(containerId);
+  const max = Math.max(...items.map(i=>i.barValue));
+  items.forEach((item,idx)=>{
+    const row = document.createElement('div');
+    row.className = 'bar-item '+groupClass;
+    const pct = Math.max(3, (item.barValue/max*100));
+    row.innerHTML = `
+      <div class="bar-label-row"><span>${item.label}</span><span class="val">${item.display}</span></div>
+      <div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:${item.color}"></div></div>
+    `;
+    row.addEventListener('click', ()=> setExplain(panelId, groupClass, row, item.detailed, item.simple, item.who));
+    el.appendChild(row);
+  });
+}
+
+/* Followers */
+buildBars('chart-followers','explain-followers',[
+  {label:'You (@vic_k.ie_)', barValue: Math.sqrt(107), display:'107', color:'var(--gold)',
+    detailed:'You have 107 followers right now. Every other account here has been building for years, so this gap is expected at this stage, not a red flag on its own.',
+    simple:'This account has 107 followers today.', who:'Vickie'},
+  {label:'jun_yuh', barValue: Math.sqrt(5314405), display:'5,314,405', color:'var(--blue)',
+    detailed:'jun_yuh has over 5.3 million followers. That is roughly 50,000 times your current size, so raw numbers like likes are not a fair comparison, only patterns are.',
+    simple:'This creator has about 5.3 million followers.', who:'Vickie'},
+  {label:'salemkinging', barValue: Math.sqrt(357035), display:'357,035', color:'var(--purple)',
+    detailed:'salemkinging has about 357,000 followers, the middle-sized of your 3 tracked competitors.',
+    simple:'This creator has about 357,000 followers.', who:'Vickie'},
+  {label:'victor_okafor', barValue: Math.sqrt(201567), display:'201,567', color:'var(--teal)',
+    detailed:'victor_okafor has about 201,000 followers, the smallest of the 3 you track, but still nearly 2,000 times your size.',
+    simple:'This creator has about 201,000 followers.', who:'Vickie'}
+]);
+
+/* Reel count */
+buildBars('chart-reelcount','explain-reelcount',[
+  {label:'You', barValue:42, display:'42 reels', color:'var(--gold)',
+    detailed:'You posted 42 reels in the 62-day window. That is about 1 reel every 1.5 days.',
+    simple:'This account posted 42 reels in about 2 months.', who:'Vickie'},
+  {label:'jun_yuh', barValue:152, display:'152 reels', color:'var(--blue)',
+    detailed:'jun_yuh posted 152 reels in the same window, more than 3 times your count. That works out to roughly 2 to 3 reels a day.',
+    simple:'This creator posted about 2 to 3 reels every day.', who:'Vickie'},
+  {label:'salemkinging', barValue:90, display:'90 reels', color:'var(--purple)',
+    detailed:'salemkinging posted 90 reels, a little over 2x your count, roughly 1 to 2 a day.',
+    simple:'This creator posted about 1 to 2 reels every day.', who:'Vickie'},
+  {label:'victor_okafor', barValue:66, display:'66 reels', color:'var(--teal)',
+    detailed:'victor_okafor posted 66 reels, about 1.5x your count, close to 1 a day.',
+    simple:'This creator posted close to 1 reel every day.', who:'Vickie'}
+]);
+
+/* Competitor engagement score */
+buildBars('chart-compeng','explain-compeng',[
+  {label:'jun_yuh', barValue:0.207, display:'0.21', color:'var(--blue)',
+    detailed:'jun_yuh scores 0.21 on Metricool\'s engagement formula. This looks low, but it is normal for huge accounts, since a much smaller share of 5.3 million followers can still be a big raw number of likes.',
+    simple:'This creator\'s engagement score is 0.21, which is normal for a very large account.', who:'Vickie'},
+  {label:'salemkinging', barValue:1.65, display:'1.65', color:'var(--purple)',
+    detailed:'salemkinging scores 1.65, the highest of your 3 competitors. A smaller, more engaged following relative to follower count.',
+    simple:'This creator\'s engagement score is 1.65, the highest of the 3.', who:'Vickie'},
+  {label:'victor_okafor', barValue:0.768, display:'0.77', color:'var(--teal)',
+    detailed:'victor_okafor scores 0.77, in between the other two. His content is mostly community-group sales posts, which may be pulling this down.',
+    simple:'This creator\'s engagement score is 0.77, in the middle of the 3.', who:'Vickie'}
+]);
+
+/* Content type bar */
+buildBars('chart-contenttype','explain-contenttype',[
+  {label:'Personal story (11 reels)', barValue:110.7, display:'110.7 avg views', color:'var(--green)',
+    detailed:'Reels with a real, specific personal story (like your Marilyn Madlion post or your mental health post) averaged 110.7 views, your highest-performing type by a wide margin.',
+    simple:'Reels where you told a real personal story got the most views on average.', who:'Vickiern'},
+  {label:'Creative / off-format (1 reel)', barValue:183, display:'183 views (n=1)', color:'var(--teal)',
+    detailed:'Your one reel that broke from the "Day X/100" format entirely (the editing fun post) hit 183 views. That is only 1 data point, so treat it as a hint to test more, not a proven pattern yet.',
+    simple:'The one time you posted something different from your usual format, it did well. Worth testing again.', who:'Vickiern'},
+  {label:'Educational / how-to (3 reels)', barValue:78.7, display:'78.7 avg views', color:'var(--purple)',
+    detailed:'Structured, list-style educational reels (like "4 things you need in 2026") averaged 78.7 views, your second-strongest type.',
+    simple:'Reels with a clear list or lesson did well too.', who:'Vickiern'},
+  {label:'Sales pitch (6 reels)', barValue:57.7, display:'57.7 avg views', color:'var(--red)',
+    detailed:'Reels that directly pitched the Storytelling Playbook averaged 57.7 views and, more importantly, the lowest engagement rate of any type (7.9, versus 14.8 average).',
+    simple:'Reels that were mostly a sales pitch performed the weakest.', who:'Vickiern'},
+  {label:'Generic "Day X/100" (21 reels)', barValue:49.7, display:'49.7 avg views', color:'var(--dim)',
+    detailed:'Half of everything you posted (21 of 42 reels) was a "Day X/100" caption with little or no real story underneath. This is your most common format and your lowest by average views.',
+    simple:'Half of your reels used a simple day-counter caption with no real story, and these were your weakest posts on average.', who:'Vickiern'}
+]);
+
+/* ---------- PIE CHART: format mix ---------- */
+function polarToCartesian(cx,cy,r,angleDeg){
+  const a=(angleDeg-90)*Math.PI/180;
+  return {x:cx+r*Math.cos(a), y:cy+r*Math.sin(a)};
+}
+function pieSlicePath(cx,cy,r,startAngle,endAngle){
+  const start=polarToCartesian(cx,cy,r,endAngle);
+  const end=polarToCartesian(cx,cy,r,startAngle);
+  const largeArc = endAngle-startAngle<=180?"0":"1";
+  return `M ${cx} ${cy} L ${start.x} ${start.y} A ${r} ${r} 0 ${largeArc} 0 ${end.x} ${end.y} Z`;
+}
+function buildPie(svgId, keyId, panelId, items, groupClass){
+  const svg = document.getElementById(svgId);
+  const key = document.getElementById(keyId);
+  const cx=80, cy=80, r=70;
+  const total = items.reduce((s,i)=>s+i.value,0);
+  let angle=0;
+  const ns='http://www.w3.org/2000/svg';
+  items.forEach(item=>{
+    const slice = item.value/total*360;
+    const path = document.createElementNS(ns,'path');
+    path.setAttribute('d', pieSlicePath(cx,cy,r,angle,angle+slice));
+    path.setAttribute('fill', item.color);
+    path.dataset.detailed = item.detailed;
+    path.dataset.simple = item.simple;
+    path.dataset.who = item.who;
+    const btnRefs=[path];
+    path.addEventListener('click', ()=>{
+      const p = document.getElementById(panelId);
+      const txt = mode==='simple'?item.simple:item.detailed;
+      p.innerHTML = '<span class="who">'+item.who+'</span><p style="margin:0">'+txt+'</p>';
+      svg.querySelectorAll('path').forEach(el=>el.classList.remove('selected'));
+      path.classList.add('selected');
+    });
+    svg.appendChild(path);
+    angle+=slice;
+
+    const keyItem = document.createElement('div');
+    keyItem.className='pie-key-item';
+    keyItem.innerHTML = `<span class="sw" style="background:${item.color}"></span><span>${item.label} — ${item.value}${item.suffix||''}</span>`;
+    keyItem.addEventListener('click', ()=>path.dispatchEvent(new Event('click')));
+    key.appendChild(keyItem);
+  });
+}
+
+buildPie('pie-format','pie-format-key','explain-format',[
+  {label:'Reels', value:42, suffix:' posts', color:'var(--gold)',
+    detailed:'42 of your 52 posts (81%) were reels. Reels are your main reach tool, averaging 61 people reached per post.',
+    simple:'Most of what you post (81%) is reels.', who:'Vickiern'},
+  {label:'Carousels', value:10, suffix:' posts', color:'var(--purple)',
+    detailed:'10 of your 52 posts (19%) were carousels. They reach fewer people (13 to 22 on average) but engage more than twice as hard per person who sees them.',
+    simple:'A smaller share (19%) of what you post is carousels, but these get people to engage more.', who:'Vickiern'}
+],'pie-format-group');
+
+/* ---------- LINE CHART: monthly trend ---------- */
+function buildLine(svgId, panelId, points){
+  const svg = document.getElementById(svgId);
+  const w=400,h=180, padL=40,padR=20,padT=20,padB=30;
+  const maxV = Math.max(...points.map(p=>p.value))*1.15;
+  const stepX = (w-padL-padR)/(points.length-1);
+  const ns='http://www.w3.org/2000/svg';
+  const coords = points.map((p,i)=>({x:padL+i*stepX, y: h-padB-(p.value/maxV)*(h-padT-padB)}));
+
+  // axis
+  const axis = document.createElementNS(ns,'line');
+  axis.setAttribute('x1',padL); axis.setAttribute('y1',h-padB); axis.setAttribute('x2',w-padR); axis.setAttribute('y2',h-padB);
+  axis.setAttribute('stroke','#3a332c'); svg.appendChild(axis);
+
+  // polyline
+  const poly = document.createElementNS(ns,'polyline');
+  poly.setAttribute('points', coords.map(c=>c.x+','+c.y).join(' '));
+  poly.setAttribute('fill','none'); poly.setAttribute('stroke','#cba25f'); poly.setAttribute('stroke-width','2');
+  svg.appendChild(poly);
+
+  points.forEach((p,i)=>{
+    const c = coords[i];
+    const label = document.createElementNS(ns,'text');
+    label.setAttribute('x',c.x); label.setAttribute('y',h-padB+16);
+    label.setAttribute('fill','#b7ac9c'); label.setAttribute('font-size','11'); label.setAttribute('text-anchor','middle');
+    label.textContent = p.month;
+    svg.appendChild(label);
+
+    const dot = document.createElementNS(ns,'circle');
+    dot.setAttribute('cx',c.x); dot.setAttribute('cy',c.y); dot.setAttribute('r','6');
+    dot.setAttribute('fill','#cba25f'); dot.classList.add('line-pt');
+    dot.addEventListener('click', ()=>{
+      const panel = document.getElementById(panelId);
+      const txt = mode==='simple'?p.simple:p.detailed;
+      panel.innerHTML = '<span class="who">Vickiern</span><p style="margin:0">'+txt+'</p>';
+      svg.querySelectorAll('.line-pt').forEach(d=>d.classList.remove('selected'));
+      dot.classList.add('selected');
+    });
+    svg.appendChild(dot);
+  });
+}
+
+buildLine('line-monthly','explain-monthly',[
+  {month:'Jul', value:67.7,
+    detailed:'July: 11 reels posted, averaging 67.7 views each.',
+    simple:'In July, reels averaged about 68 views.'},
+  {month:'Aug', value:66.4,
+    detailed:'August: 24 reels posted (your busiest month), averaging 66.4 views each, essentially flat versus July despite posting more than double the reels.',
+    simple:'In August you posted a lot more, but the average views per reel stayed about the same.'},
+  {month:'Sep', value:98.3,
+    detailed:'September (partial, 19 days): 7 reels averaging 98.3 views. This is pulled up almost entirely by the single 571-view Marilyn Madlion reel on Sept 1. Without it, September is closer to your July and August average.',
+    simple:'September looks higher, but that is mostly because of one very good post, not a steady rise.'}
+]);
+
+/* ---------- BUBBLE CHART: all reels ---------- */
+const reelsData = [
+["Sep 9","Day 100 reflection, thanking mentors",17,14,5,"generic","#b7ac9c"],
+["Sep 8","Day 99, almost done",18,12,6,"generic","#b7ac9c"],
+["Sep 6","Day 97, hashtags only",40,36,2,"generic","#b7ac9c"],
+["Sep 4","Day 94, low effort day",8,6,3,"generic","#b7ac9c"],
+["Sep 2","Day 93, near the end",14,9,3,"generic","#b7ac9c"],
+["Sep 1","A letter to my best friend (poetry)",20,14,2,"personal","#8fae74"],
+["Sep 1","The Marilyn Madlion free call story",571,460,49,"personal","#8fae74"],
+["Aug 31","Day 91, hashtags only",17,10,4,"generic","#b7ac9c"],
+["Aug 30","Day 90, be excited",14,9,2,"generic","#b7ac9c"],
+["Aug 29","Day 89, dating not compulsory",27,18,2,"generic","#b7ac9c"],
+["Aug 28","Day 88, ask me questions",100,91,4,"generic","#b7ac9c"],
+["Aug 27","Day 87, thanking mentors",60,49,2,"personal","#8fae74"],
+["Aug 26","Day 86, hashtags only",14,13,4,"generic","#b7ac9c"],
+["Aug 25","Mental health, how I stay stable",16,12,2,"personal","#8fae74"],
+["Aug 24","Day 84, social anxiety on camera",17,11,2,"personal","#8fae74"],
+["Aug 22","Day 82, ask questions",128,105,18,"generic","#b7ac9c"],
+["Aug 21","Struggled with content for 3 years",17,13,5,"personal","#8fae74"],
+["Aug 19","Change 4 things, no shortcuts",165,140,6,"personal","#8fae74"],
+["Aug 17","Day 77, get up",63,45,4,"generic","#b7ac9c"],
+["Aug 16","Day 76, be aggressive",26,20,2,"generic","#b7ac9c"],
+["Aug 15","Sales: consistency without structure",120,112,2,"sales","#c2695a"],
+["Aug 14","Day 74, hashtags only",115,107,2,"generic","#b7ac9c"],
+["Aug 12","Day 72, ask questions",47,40,1,"generic","#b7ac9c"],
+["Aug 11","Sales: stop posting every day",45,44,2,"sales","#c2695a"],
+["Aug 10","Day 70 milestone, voice note",129,121,4,"personal","#8fae74"],
+["Aug 7","Day 67, fall get back up",132,115,3,"generic","#b7ac9c"],
+["Aug 6","Vlogging how-to",52,49,1,"educational","#a58fc4"],
+["Aug 5","Day 65, hashtags only",14,16,1,"generic","#b7ac9c"],
+["Aug 4","Day 64, change your mindset",31,28,1,"generic","#b7ac9c"],
+["Aug 3","Fun with editing (off-format)",183,145,2,"creative","#6fa8a0"],
+["Aug 3","Sales: you keep restarting",61,57,2,"sales","#c2695a"],
+["Jul 31","Sales: restarted content plan (Storytelling Playbook)",26,25,4,"sales","#c2695a"],
+["Jul 29","Day 58, hashtags only",32,31,3,"generic","#b7ac9c"],
+["Jul 28","Sales, but story-led: one post did 10k views",34,28,5,"sales","#c2695a"],
+["Jul 27","Day 56, VX Space CTA",14,14,2,"generic","#b7ac9c"],
+["Jul 26","Sales: VX Space pitch",60,51,2,"sales","#c2695a"],
+["Jul 25","4 things you need in 2026",168,113,4,"educational","#a58fc4"],
+["Jul 24","Day 52, personal brand journey CTA",30,23,6,"generic","#b7ac9c"],
+["Jul 22","Halfway through 100 days, serious crisis",184,174,3,"personal","#8fae74"],
+["Jul 21","Answered questions from research",16,14,4,"educational","#a58fc4"],
+["Jul 20","Day 48, which are you a culprit for",159,149,3,"generic","#b7ac9c"],
+["Jul 19","Day 47, data spent, decided to rest",22,18,7,"personal","#8fae74"]
+];
+function buildBubble(svgId, panelId, keyId, data){
+  const svg = document.getElementById(svgId);
+  const w=400,h=260, padL=36,padR=16,padT=16,padB=34;
+  const maxReach = Math.max(...data.map(d=>d[3]))*1.1;
+  const maxInter = Math.max(...data.map(d=>d[4]))*1.15;
+  const maxViews = Math.max(...data.map(d=>d[2]));
+  const ns='http://www.w3.org/2000/svg';
+
+  // axes
+  const axisX = document.createElementNS(ns,'line');
+  axisX.setAttribute('x1',padL); axisX.setAttribute('y1',h-padB); axisX.setAttribute('x2',w-padR); axisX.setAttribute('y2',h-padB);
+  axisX.setAttribute('stroke','#3a332c'); svg.appendChild(axisX);
+  const axisY = document.createElementNS(ns,'line');
+  axisY.setAttribute('x1',padL); axisY.setAttribute('y1',padT); axisY.setAttribute('x2',padL); axisY.setAttribute('y2',h-padB);
+  axisY.setAttribute('stroke','#3a332c'); svg.appendChild(axisY);
+  const xl = document.createElementNS(ns,'text');
+  xl.setAttribute('x',w/2); xl.setAttribute('y',h-6); xl.setAttribute('fill','#b7ac9c'); xl.setAttribute('font-size','10'); xl.setAttribute('text-anchor','middle');
+  xl.textContent='reach (people who saw it) →'; svg.appendChild(xl);
+  const yl = document.createElementNS(ns,'text');
+  yl.setAttribute('x',-h/2); yl.setAttribute('y',12); yl.setAttribute('fill','#b7ac9c'); yl.setAttribute('font-size','10'); yl.setAttribute('text-anchor','middle');
+  yl.setAttribute('transform','rotate(-90)'); yl.textContent='interactions ↑'; svg.appendChild(yl);
+
+  data.forEach(d=>{
+    const [dateLabel, desc, views, reach, inter, type, color] = d;
+    const x = padL + (reach/maxReach)*(w-padL-padR);
+    const y = h-padB - (inter/maxInter)*(h-padT-padB);
+    const rad = 3 + (views/maxViews)*14;
+    const c = document.createElementNS(ns,'circle');
+    c.setAttribute('cx',x); c.setAttribute('cy',y); c.setAttribute('r',rad);
+    c.setAttribute('fill',color); c.classList.add('bubble');
+    c.addEventListener('click', ()=>{
+      const panel = document.getElementById(panelId);
+      panel.innerHTML = '<span class="who">Vickiern</span><p style="margin:0"><strong>'+dateLabel+'</strong> — '+desc+'. '+views+' views, '+reach+' reached, '+inter+' interactions. Type: '+type+'.</p>';
+      svg.querySelectorAll('.bubble').forEach(b=>b.classList.remove('selected'));
+      c.classList.add('selected');
+    });
+    svg.appendChild(c);
+  });
+
+  const key = document.getElementById(keyId);
+  const types = [['personal','Personal story','#8fae74'],['generic','Day X/100 generic','#b7ac9c'],['sales','Sales pitch','#c2695a'],['educational','Educational','#a58fc4'],['creative','Off-format / creative','#6fa8a0']];
+  types.forEach(t=>{
+    const item = document.createElement('div');
+    item.className='pie-key-item';
+    item.innerHTML = `<span class="sw" style="background:${t[2]}"></span><span>${t[1]}</span>`;
+    key.appendChild(item);
+  });
+}
+buildBubble('bubble-reels','explain-bubble','bubble-key', reelsData);
+</script>
+</body>
+</html>
